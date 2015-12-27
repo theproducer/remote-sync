@@ -121,7 +121,20 @@ class ScpTransport
       privateKey = fs.readFileSync keyfile
     else
       privateKey = null
+    
+    agent = switch
+      when useAgent is true
+        if /windows/i.test process.env['OS']
+          process.env['SSH_AUTH_SOCK'] or "pageant"
+        else
+          process.env['SSH_AUTH_SOCK']
 
+      when typeof useAgent is "string"
+        useAgent
+
+      else
+        ""
+    
     connection.connect
       host: hostname
       port: port
@@ -129,6 +142,6 @@ class ScpTransport
       password: password
       privateKey: privateKey
       passphrase: passphrase
-      agent: if useAgent then process.env['SSH_AUTH_SOCK'] else null
+      agent: agent
 
     @connection = connection
